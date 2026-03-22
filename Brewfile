@@ -172,7 +172,7 @@ cask 'qlcolorcode'    # QL for code with highlighting
 cask 'qlmarkdown'     # QL for markdown files
 cask 'qlprettypatch'  # QL for patch / diff files
 cask 'qlstephen'      # QL for dev text files
-cask 'qlvideo'        # QL for video formats
+cask 'quicklook-video'      # QL for video formats
 cask 'quicklook-csv'  # QL for tables in CSV format
 cask 'webpquicklook',  args: { require_sha: false } # QL for WebP image files
 
