@@ -13,7 +13,12 @@ echo "🔧 Setup Mac M5 COMPLETE | ZSH-SAFE | $(date)"
 # 1-3. Core (già OK)
 command -v xcode-select >/dev/null 2>&1 || xcode-select --install || true
 command -v brew >/dev/null 2>&1 || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && eval "$(/opt/homebrew/bin/brew shellenv)" && echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
-brew update && brew bundle --file="$BREWFILE_PATH" --force
+# NOTE: HOMEBREW_NO_INSTALL_FROM_API workaround for brew 5.1.8 bug parsing
+# `generate_completions_from_executable` shells (pwsh) in cask JSON — affects 1password-cli.
+# Forces use of local tap clone (homebrew/cask) instead of the broken API path.
+brew update
+brew tap homebrew/cask >/dev/null 2>&1 || true
+HOMEBREW_NO_INSTALL_FROM_API=1 brew bundle --file="$BREWFILE_PATH" --force
 
 # asdf setup + plugin linguaggi
 if command -v asdf >/dev/null 2>&1; then

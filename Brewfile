@@ -38,6 +38,8 @@ brew 'newsboat'     # RSS / ATOM reader
 brew 'pass'         # Password store
 brew 'rclone'       # Manage cloud storage
 brew 'task'         # Todo + task management
+cask 'grandperspective' # Disk usage visualizer
+cask 'omnidisksweeper' 
 
 # CLI Development Suits
 brew 'httpie'       # HTTP / API testing testing client
