@@ -30,7 +30,6 @@ brew 'speedtest-cli'# Command line speed test utility
 brew 'aspell'       # Spell check
 brew 'buku'         # Bookmark manager
 brew 'cmus'         # Music player
-brew 'cointop'      # Crypto prices and portfolio
 brew 'ddgr'         # Web search, via DuckDuckGo
 brew 'khal'         # Calendar client
 brew 'mutt'         # Email client
