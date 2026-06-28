@@ -132,7 +132,7 @@ cask "appcleaner"
 # OpenAI's official ChatGPT desktop app
 cask "chatgpt"
 cask "claude"
-cask "claude-code"
+cask "claude-code@latest"
 #mas "Perplexity", id: 6714467650
 cask "slack"
 cask "zoom"

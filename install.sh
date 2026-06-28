@@ -28,17 +28,39 @@ if ! command -v brew >/dev/null 2>&1; then
   append_if_missing 'eval "$(/opt/homebrew/bin/brew shellenv)"' "$ZPROFILE_PATH"
 fi
 
-# 3. Brew bundle
-# HOMEBREW_NO_INSTALL_FROM_API workaround for brew 5.1.8 bug parsing
-# `generate_completions_from_executable` shells (pwsh) in cask JSON — affects 1password-cli.
-brew update
-brew tap homebrew/cask >/dev/null 2>&1 || true
-HOMEBREW_NO_INSTALL_FROM_API=1 brew bundle --file="$BREWFILE_PATH" --force
+# 3. Brew bundle (best-effort: installa tutto il possibile, salta i singoli fallimenti)
+# Nota: niente HOMEBREW_NO_INSTALL_FROM_API. Serviva ad aggirare un bug di brew 5.1.8
+# nel parsing del JSON dei cask (1password-cli), ma da brew 6.x quel flag rompe il
+# fetch di TUTTI i cask. L'installazione via API è ormai il default corretto.
+brew update || echo "⚠️  brew update fallito, proseguo con la cache locale"
+
+# brew bundle prova ogni entry e prosegue anche se una fallisce: l'`if` cattura
+# l'exit code ≠ 0 così set -e non interrompe lo script, e mostriamo i mancanti.
+if brew bundle --file="$BREWFILE_PATH"; then
+  echo "✅ Brew bundle: tutti i pacchetti installati"
+else
+  echo "⚠️  Brew bundle: alcuni pacchetti NON installati. Riepilogo mancanti:"
+  brew bundle check --file="$BREWFILE_PATH" --verbose || true
+  echo "   (lo script prosegue comunque con gli step successivi)"
+fi
 
 # 4. asdf + plugin linguaggi
+# asdf ≥ 0.16 è una riscrittura in Go: niente più libexec/asdf.sh, solo binario + shims.
 if command -v asdf >/dev/null 2>&1; then
-  ASDF_PREFIX="$(brew --prefix asdf)"
-  append_if_missing ". \"$ASDF_PREFIX/libexec/asdf.sh\"" "$ZSHRC_PATH"
+  ASDF_DATA_DIR="${ASDF_DATA_DIR:-$HOME/.asdf}"
+
+  # Rimuovi eventuale source legacy a libexec/asdf.sh (rotto in 0.16+)
+  if [[ -f "$ZSHRC_PATH" ]] && grep -q 'libexec/asdf\.sh' "$ZSHRC_PATH"; then
+    grep -v 'libexec/asdf\.sh' "$ZSHRC_PATH" > "$ZSHRC_PATH.tmp" && mv "$ZSHRC_PATH.tmp" "$ZSHRC_PATH"
+  fi
+
+  # Setup corretto per asdf Go: shims in PATH + completions zsh
+  append_if_missing 'export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"' "$ZSHRC_PATH"
+  append_if_missing 'fpath=(${ASDF_DATA_DIR:-$HOME/.asdf}/completions $fpath)' "$ZSHRC_PATH"
+  append_if_missing 'autoload -Uz compinit && compinit' "$ZSHRC_PATH"
+
+  mkdir -p "$ASDF_DATA_DIR/completions"
+  asdf completion zsh > "$ASDF_DATA_DIR/completions/_asdf" 2>/dev/null || true
 
   add_plugin() {
     local name="$1" url="$2"
